@@ -1,5 +1,23 @@
 # simple-arrows
 
+>This library is rendered redundant using the following cases:
+>
+>```lisp
+>;;; Fails on:
+>(-<> 5
+>  (+ 6 <>
+>     (eval (macroexpand `(-<> 10
+>                           (+ 2 <> ,<>))))))
+>;;; Alternative using arrows:
+>(as-> 5 a
+>      (+ 6 a
+>         (eval (macroexpand `(as-> 10 a
+>                                   (+ 2 a ,a))))))
+>;=> 28
+>```
+
+## Original README
+
 More established libraries:
 
 - [arrows](https://github.com/Harleqin/arrows) - lightweight, but I wanted nesting (see examples below)
