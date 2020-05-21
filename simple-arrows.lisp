@@ -18,19 +18,16 @@
                             ,@rest)))
       initial-form))
 
-(defparameter *blacklisted-roots* '(-<>))
 ;;; To handle nested usage of -<>; see simple-arrows-test.lisp
-(defun replace-symbol-in-tree (symbol replacement tree)
+(defun find-symbol-in-tree (symbol tree) ; using 'string=
   (when tree
-    (cond ((and (listp tree) (member (car tree) *blacklisted-roots*))
-           tree)
-          ((listp tree)           
-           (cons (replace-symbol-in-tree symbol replacement (car tree))
-                 (replace-symbol-in-tree symbol replacement (cdr tree))))
+    (cond ((listp tree)           
+           (or (find-symbol-in-tree symbol (car tree))
+               (find-symbol-in-tree symbol (cdr tree))))
           ((and (symbolp tree)
                 (string= tree symbol))
-           replacement)
-          (t tree))))
+           tree)
+          (t nil))))
 
 (defmacro -<> (initial-form &body forms)
   "Examples:
@@ -40,9 +37,8 @@
              (+ <> <> (-<> 5 (+ <> <>)))))
   22"
   (if forms
-      (let* ((first (gensym))
-             (replaced-first (replace-symbol-in-tree '<> first (first forms))))
+      (let* ((first (find-symbol-in-tree '<> (first forms))))
         (macroexpand-1 `(-<> (let ((,first ,initial-form))
-                               ,replaced-first)
+                               ,(first forms))
                           ,@(rest forms))))
       initial-form))
